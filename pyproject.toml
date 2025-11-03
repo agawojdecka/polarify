@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "polarify"
+version = "0.1.0"
+description = ""
+authors = ["agnieszkawojdecka <agnieszka.wojdecka@wp.pl>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.120.4"
+uvicorn = {extras = ["standard"], version = "^0.38.0"}
+flake8 = "^7.3.0"
+isort = "^7.0.0"
+black = "^25.9.0"
+mypy = "^1.18.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
