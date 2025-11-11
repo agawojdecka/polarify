@@ -1,0 +1,6 @@
+**Task:**
+Analyze the sentiment of each text snippet provided in the Input Data.
+**Output Format:**
+You MUST return a JSON object. The keys in the output must match the input
+IDs exactly, and the values must be the calculated float polarity score.
+**Input Data (ID: Text):**

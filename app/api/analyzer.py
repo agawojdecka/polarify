@@ -1,5 +1,10 @@
+import json
+
 from fastapi import APIRouter
 from google import genai
+from google.genai import types
+
+from app.services.prompt import get_prompt
 
 router = APIRouter()
 
@@ -18,8 +23,8 @@ async def analyze(opinion: str):
 
 
 @router.post("/analyzer-advanced")
-async def analyze_advanced(opinions_list: dict[str, str]):
-    formatted_opinions = [f"{key}: {value}" for key, value in opinions_list.items()]
+async def analyze_advanced(opinions_dict: dict[str, str]):
+    formatted_opinions = [f"{key}: {value}" for key, value in opinions_dict.items()]
 
     opinions_str = ", ".join(formatted_opinions)
 
@@ -46,3 +51,29 @@ async def analyze_advanced(opinions_list: dict[str, str]):
         }
 
         return result_dict
+
+
+@router.post("/analyzer-advanced-config")
+async def analyze_advanced_config(opinions_dict: dict[str, str]):
+    formatted_opinions = [f"{key}: {value}" for key, value in opinions_dict.items()]
+
+    opinions_str = ", ".join(formatted_opinions)
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=get_prompt("content.txt") + opinions_str,
+            config=types.GenerateContentConfig(
+                system_instruction=get_prompt("system_instructions.txt"),
+                response_mime_type='application/json',
+            ),
+        )
+
+        if response.text is None:
+            return {"Message": "Something went wrong."}
+        else:
+            return json.loads(response.text)
+
+    except Exception as e:
+        print(f"An error occurred during API call: {e}")
+        return None
