@@ -1,14 +1,26 @@
+import os
+from datetime import datetime
+
 import pytest
+from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, get_db
+from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.database import Base, get_db
+from app.domain.user import User as UserDomain
 from app.main import app
+from app.models.user import User as UserModel
 
-TEST_DATABASE_URL = "postgresql://test_user:test@localhost:5444/test_postgres_polarify"
+load_dotenv()
 
-engine = create_engine(TEST_DATABASE_URL)
+test_database_url = os.getenv("TEST_DATABASE_URL")
+if test_database_url is None:
+    raise ValueError("TEST_DATABASE_URL not found.")
+
+
+engine = create_engine(test_database_url)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -33,7 +45,7 @@ def db_session():
         connection.close()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def test_client(db_session):
     """Create a test client that uses the override_get_db fixture to return a session."""
 
@@ -43,15 +55,49 @@ def test_client(db_session):
         finally:
             db_session.close()
 
-    client = TestClient(app)
-
     app.dependency_overrides[get_db] = override_get_db
+
+    client = TestClient(app)
 
     with client as test_client:
         yield test_client
 
+    app.dependency_overrides = {}
 
-@pytest.fixture()
-def project_payload():
-    """Generate a project payload."""
-    return {"name": "Test Project"}
+
+@pytest.fixture(scope="function")
+def test_auth_client(db_session):
+    """
+    Create a test client that uses override_get_db fixture to return a session
+    and override_get_current_user fixture to authenticate against the database.
+    """
+    password_hash = os.getenv("TEST_USER_PASSWORD_HASH")
+    fake_db_user = UserModel(
+        username="testuser", email="test@example.com", password_hash=password_hash
+    )
+    db_session.add(fake_db_user)
+    db_session.commit()
+    db_session.refresh(fake_db_user)
+
+    fake_user = UserDomain(
+        id=1, username="testuser", email="test@example.com", created_at=datetime.now()
+    )
+
+    def override_get_current_user():
+        return fake_user
+
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            db_session.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+
+    client = TestClient(app)
+
+    with client as test_auth_client:
+        yield test_auth_client
+
+    app.dependency_overrides = {}

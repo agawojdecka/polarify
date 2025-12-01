@@ -24,6 +24,7 @@ passlib = "^1.7.4"
 pydantic = {extras = ["email"], version = "^2.12.5"}
 bcrypt = "^5.0.0"
 types-passlib = "^1.7.7.20250602"
+sqlalchemy-stubs = "^0.4"
 
 [build-system]
 requires = ["poetry-core"]
