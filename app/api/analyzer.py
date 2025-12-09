@@ -1,17 +1,17 @@
+from dataclasses import asdict
+
 from fastapi import APIRouter, HTTPException, UploadFile
-from google import genai
 from pydantic import BaseModel
 
 from app.services.sentiment_analyzer import (
     Opinion,
+    calculate_statistical_measures,
     get_sentiment_average_value,
     get_sentiment_values,
     opinions_csv_to_list,
 )
 
 router = APIRouter()
-
-client = genai.Client()
 
 
 class OpinionsSentimentRequest(BaseModel):
@@ -26,6 +26,14 @@ class OpinionsSentimentResponse(BaseModel):
 
 class OpinionsSentimentAverageResponse(BaseModel):
     value: float
+
+
+class OpinionsSentimentStatisticalMeasuresResponse(BaseModel):
+    min: float
+    max: float
+    mean: float
+    median: float
+    std: float
 
 
 @router.post("/analyze-sentiment")
@@ -80,4 +88,22 @@ async def analyze_sentiment_csv(file: UploadFile) -> list[OpinionsSentimentRespo
         OpinionsSentimentResponse(id=item.id, sentiment=item.sentiment)
         for item in sentiment_values
     ]
+    return response
+
+
+@router.post("/analyze-sentiment-statistical-measures")
+async def analyze_sentiment_statistical_measures(
+    opinions_to_analyze: list[OpinionsSentimentRequest],
+) -> OpinionsSentimentStatisticalMeasuresResponse:
+    opinions_list = [
+        Opinion(id=opinion.id, content=opinion.content)
+        for opinion in opinions_to_analyze
+    ]
+
+    sentiment_values = get_sentiment_values(opinions_list)
+    statistical_measures = calculate_statistical_measures(sentiment_values)
+
+    response = OpinionsSentimentStatisticalMeasuresResponse(
+        **asdict(statistical_measures)
+    )
     return response
