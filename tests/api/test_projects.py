@@ -1,0 +1,45 @@
+def test_create_get_project_api(test_client):
+    create_response = test_client.post("/projects/", params={"name": "Test"})
+    assert create_response.status_code == 201
+    assert create_response.json()["name"] == "Test"
+    assert create_response.json()["id"] == 1
+
+    get_response = test_client.get("/projects/1")
+    assert get_response.status_code == 200
+    assert get_response.json()["name"] == "Test"
+    assert get_response.json()["id"] == 1
+
+
+def test_get_projects_list_api(test_client):
+    test_client.post("/projects/", params={"name": "Test 1"})
+    test_client.post("/projects/", params={"name": "Test 2"})
+    test_client.post("/projects/", params={"name": "Test 3"})
+    response = test_client.get("/projects")
+    assert response.status_code == 200
+    assert response.json()[0]["name"] == "Test 1"
+    assert response.json()[1]["name"] == "Test 2"
+    assert response.json()[2]["name"] == "Test 3"
+    assert len(response.json()) == 3
+
+
+def test_update_project_api(test_client):
+    test_client.post("/projects/", params={"name": "Test"})
+    response = test_client.put("/projects/1", params={"name": "Test Test"})
+    assert response.status_code == 202
+    assert response.json()["name"] == "Test Test"
+
+
+def test_delete_project_api(test_client):
+    test_client.post("/projects/", params={"name": "Test"})
+    delete_response = test_client.delete("/projects/1")
+    assert delete_response.status_code == 202
+
+
+def test_get_project_doesnt_exist(test_client):
+    response = test_client.get("/projects/1")
+    assert response.status_code == 404
+
+
+def test_create_project_wrong_payload(test_client):
+    response = test_client.post("/projects/", params={"id": 1})
+    assert response.status_code == 422
