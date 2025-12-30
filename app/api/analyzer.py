@@ -3,7 +3,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from app.services.sentiment_analyzer import (
+from app.services.sentiment_analysis import (
     Opinion,
     calculate_statistical_measures,
     get_sentiment_average_value,

@@ -2,13 +2,16 @@ import csv
 import io
 import json
 from dataclasses import dataclass
-from statistics import mean, median, pstdev
+from datetime import date, datetime
+from statistics import StatisticsError, mean, median, pstdev
 
 from fastapi import HTTPException
 from google import genai
 from google.genai import types
+from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile
 
+from app.repository.sentiment_analysis import create_sentiment_analysis_result
 from app.utils.prompts import PromptTypeE, get_prompt
 
 
@@ -107,3 +110,68 @@ def calculate_statistical_measures(
         median=median(values),
         std=round(pstdev(values), 2),
     )
+
+
+@dataclass
+class SentimentAnalysisResult:
+    project_id: int
+    user_id: int
+    date_from: date
+    date_to: date
+    opinions_count: int
+    positive_count: int
+    neutral_count: int
+    negative_count: int
+    avg_sentiment: float
+    created_at: datetime
+
+
+def analyze_sentiment(
+    db: Session,
+    project_id: int,
+    user_id: int,
+    date_from: date,
+    date_to: date,
+    opinions_list: list[Opinion],
+) -> SentimentAnalysisResult:
+
+    opinions_sentiment_values = get_sentiment_values(opinions_list)
+    opinions_count = len(opinions_sentiment_values)
+    positive_count = sum(1 for o in opinions_sentiment_values if o.sentiment > 0.05)
+
+    negative_count = sum(1 for o in opinions_sentiment_values if o.sentiment < -0.05)
+
+    neutral_count = sum(
+        1 for o in opinions_sentiment_values if -0.05 <= o.sentiment <= 0.05
+    )
+    try:
+        avg_sentiment = round(mean(o.sentiment for o in opinions_sentiment_values), 2)
+    except StatisticsError:
+        avg_sentiment = 0.0
+
+    sentiment_analysis_result_repo = create_sentiment_analysis_result(
+        db,
+        project_id=project_id,
+        user_id=user_id,
+        date_from=date_from,
+        date_to=date_to,
+        opinions_count=opinions_count,
+        positive_count=positive_count,
+        neutral_count=neutral_count,
+        negative_count=negative_count,
+        avg_sentiment=avg_sentiment,
+    )
+
+    sentiment_analysis_result = SentimentAnalysisResult(
+        project_id=project_id,
+        user_id=user_id,
+        date_from=date_from,
+        date_to=date_to,
+        opinions_count=opinions_count,
+        positive_count=positive_count,
+        neutral_count=neutral_count,
+        negative_count=negative_count,
+        avg_sentiment=avg_sentiment,
+        created_at=sentiment_analysis_result_repo.created_at,
+    )
+    return sentiment_analysis_result

@@ -21,3 +21,6 @@ class User(Base):
     projects = relationship(  # type: ignore
         "Project", back_populates="user", cascade="all, delete-orphan"
     )
+    sentiment_analysis_results = relationship(  # type: ignore
+        "SentimentAnalysisResult", back_populates="user", cascade="all, delete-orphan"
+    )
