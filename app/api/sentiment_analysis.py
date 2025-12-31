@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -145,7 +146,7 @@ async def get_sentiment_analysis_results(
                 positive_count=sentiment_analysis_result.positive_count,
                 neutral_count=sentiment_analysis_result.neutral_count,
                 negative_count=sentiment_analysis_result.negative_count,
-                avg_sentiment=sentiment_analysis_result.avg_sentiment,
+                avg_sentiment=cast(float, sentiment_analysis_result.avg_sentiment),
                 created_at=sentiment_analysis_result.created_at,
             )
         )
