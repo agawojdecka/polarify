@@ -68,7 +68,7 @@ def get_user_by_email(db: Session, email: str) -> User | None:
 
 def is_email_or_login_taken(db: Session, *, email: str, username: str) -> bool:
     stmt = (
-        select(UserModel.id)
+        select(UserModel.id)  # type: ignore
         .where((UserModel.email == email) | (UserModel.username == username))
         .limit(1)
     )

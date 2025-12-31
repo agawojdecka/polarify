@@ -71,7 +71,10 @@ def test_auth_client(db_session):
     Create a test client that uses override_get_db fixture to return a session
     and override_get_current_user fixture to authenticate against the database.
     """
-    password_hash = os.getenv("TEST_USER_PASSWORD_HASH")
+    # for "1234" password
+    password_hash = (
+        "$5$rounds=535000$abhPWTGj/BQ8B7Cx$OBYnr8N0ZR/j0sFHB40VoEaftoLPe7PzrJTfH8Uhhu3"
+    )
     fake_db_user = UserModel(
         username="testuser", email="test@example.com", password_hash=password_hash
     )

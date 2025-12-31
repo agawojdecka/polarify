@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from statistics import StatisticsError, mean, median, pstdev
 
+from dotenv import load_dotenv
 from fastapi import HTTPException
 from google import genai
 from google.genai import types
@@ -13,6 +14,8 @@ from starlette.datastructures import UploadFile
 
 from app.repository.sentiment_analysis import create_sentiment_analysis_result
 from app.utils.prompts import PromptTypeE, get_prompt
+
+load_dotenv()
 
 
 @dataclass
