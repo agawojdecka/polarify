@@ -4,13 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.auth import get_current_user
-from app.api.dependencies.database import Base, engine, get_db
+from app.api.dependencies.database import get_db
 from app.api.schema.user import User as UserResponse
 from app.domain.user import User as UserDomain
 from app.repository import user as user_repo
 
 router = APIRouter()
-Base.metadata.create_all(bind=engine)
 
 
 @router.get("/users/me", response_model=UserResponse)

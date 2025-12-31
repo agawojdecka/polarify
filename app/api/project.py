@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.auth import get_current_user
-from app.api.dependencies.database import Base, engine, get_db
+from app.api.dependencies.database import get_db
 from app.domain.user import User as UserDomain
 from app.repository.project import (
     ProjectNotFoundException,
@@ -17,7 +17,6 @@ from app.repository.project import (
 )
 
 router = APIRouter()
-Base.metadata.create_all(bind=engine)
 
 
 class ProjectCreateUpdateRequest(BaseModel):

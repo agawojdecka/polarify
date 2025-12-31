@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.database import Base, engine, get_db
+from app.api.dependencies.database import get_db
 from app.services.auth import (
     EmailOrUsernameTakenException,
     IncorrectLoginDetailsException,
@@ -13,7 +13,6 @@ from app.services.auth import (
 )
 
 router = APIRouter()
-Base.metadata.create_all(bind=engine)
 
 
 class RegisterUserRequest(BaseModel):
