@@ -10,6 +10,7 @@ class Project(Base):
     name = Column(String(255), index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=func.now())
+    description = Column(String(255))
 
     user = relationship("User", back_populates="projects")  # type: ignore
     sentiment_analysis_results = relationship(  # type: ignore
