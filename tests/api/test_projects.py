@@ -1,13 +1,17 @@
 def test_create_get_project_api(test_auth_client):
-    create_response = test_auth_client.post("/projects", json={"name": "Test"})
+    create_response = test_auth_client.post(
+        "/projects", json={"name": "Test", "description": "Test"}
+    )
     assert create_response.status_code == 201
     assert create_response.json()["name"] == "Test"
     assert create_response.json()["id"] == 1
+    assert create_response.json()["description"] == "Test"
 
     get_response = test_auth_client.get("/projects/1")
     assert get_response.status_code == 200
     assert get_response.json()["name"] == "Test"
     assert get_response.json()["id"] == 1
+    assert get_response.json()["description"] == "Test"
 
 
 def test_get_projects_list_api(test_auth_client):
@@ -23,10 +27,13 @@ def test_get_projects_list_api(test_auth_client):
 
 
 def test_update_project_api(test_auth_client):
-    test_auth_client.post("/projects", json={"name": "Test"})
-    response = test_auth_client.put("/projects/1", json={"name": "Test Test"})
+    test_auth_client.post("/projects", json={"name": "Test", "description": "Test"})
+    response = test_auth_client.put(
+        "/projects/1", json={"name": "Test Test", "description": "Test Test"}
+    )
     assert response.status_code == 202
     assert response.json()["name"] == "Test Test"
+    assert response.json()["description"] == "Test Test"
 
 
 def test_delete_project_api(test_auth_client):

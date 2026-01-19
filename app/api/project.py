@@ -21,11 +21,13 @@ router = APIRouter()
 
 class ProjectCreateUpdateRequest(BaseModel):
     name: str
+    description: str | None = None
 
 
 class ProjectResponse(BaseModel):
     id: int
     name: str
+    description: str | None = None
 
 
 @router.post("/projects/", status_code=status.HTTP_201_CREATED)
@@ -35,10 +37,15 @@ async def create_project_api(
     current_user: UserDomain = Depends(get_current_user),
 ) -> ProjectResponse:
     project = create_project(
-        db=db, user_id=current_user.id, name=project_create_update_request.name
+        db=db,
+        user_id=current_user.id,
+        name=project_create_update_request.name,
+        description=project_create_update_request.description,
     )
 
-    response = ProjectResponse(id=project.id, name=project.name)
+    response = ProjectResponse(
+        id=project.id, name=project.name, description=project.description
+    )
     return response
 
 
@@ -52,7 +59,9 @@ async def get_project_api(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    response = ProjectResponse(id=project.id, name=project.name)
+    response = ProjectResponse(
+        id=project.id, name=project.name, description=project.description
+    )
     return response
 
 
@@ -68,11 +77,14 @@ async def update_project_api(
         project_id=project_id,
         user_id=current_user.id,
         name=project_create_update_request.name,
+        description=project_create_update_request.description,
     )
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    response = ProjectResponse(id=project.id, name=project.name)
+    response = ProjectResponse(
+        id=project.id, name=project.name, description=project.description
+    )
     return response
 
 
@@ -96,5 +108,9 @@ async def get_projects_list_api(
 
     response = []
     for project in projects:
-        response.append(ProjectResponse(id=project.id, name=project.name))
+        response.append(
+            ProjectResponse(
+                id=project.id, name=project.name, description=project.description
+            )
+        )
     return response

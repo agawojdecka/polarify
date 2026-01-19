@@ -7,8 +7,12 @@ class ProjectNotFoundException(Exception):
     pass
 
 
-def create_project(db: Session, user_id: int, name: str) -> Project:
-    db_project = Project(user_id=user_id, name=name)
+def create_project(
+    db: Session, user_id: int, name: str, description: str | None
+) -> Project:
+    db_project = Project(
+        user_id=user_id, name=name, description=description if description else ""
+    )
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
@@ -29,7 +33,7 @@ def get_project(db: Session, project_id: int, user_id: int) -> Project | None:
 
 
 def update_project(
-    db: Session, project_id: int, user_id: int, name: str
+    db: Session, project_id: int, user_id: int, name: str, description: str | None
 ) -> Project | None:
     db_project = (
         db.query(Project)
@@ -40,6 +44,7 @@ def update_project(
         return None
 
     db_project.name = name
+    db_project.description = description  # type: ignore
     db.commit()
     db.refresh(db_project)
 
