@@ -5,17 +5,15 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from statistics import StatisticsError, mean, median, pstdev
 
-from dotenv import load_dotenv
 from fastapi import HTTPException
 from google import genai
 from google.genai import types
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile
 
+from app.api.core.config import settings
 from app.repository.sentiment_analysis import create_sentiment_analysis_result
 from app.utils.prompts import PromptTypeE, get_prompt
-
-load_dotenv()
 
 
 @dataclass
@@ -48,7 +46,7 @@ def get_sentiment_values(
     opinions_list: list[Opinion],
 ) -> list[OpinionsSentiment]:
     opinions_str = opinions_list_to_str(opinions_list)
-    client = genai.Client()
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     try:
         response = client.models.generate_content(
