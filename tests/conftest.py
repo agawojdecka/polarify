@@ -1,26 +1,23 @@
-import os
 from datetime import datetime
 
 import pytest
-from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.api.core.config import settings
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.database import Base, get_db
 from app.domain.user import User as UserDomain
 from app.main import app
 from app.models.user import User as UserModel
 
-load_dotenv()
-
-test_database_url = os.getenv("TEST_DATABASE_URL")
+test_database_url = settings.TEST_DATABASE_URL
 if test_database_url is None:
     raise ValueError("TEST_DATABASE_URL not found.")
 
 
-engine = create_engine(test_database_url)
+engine = create_engine(str(test_database_url))
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
