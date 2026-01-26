@@ -13,6 +13,7 @@ from app.repository import sentiment_analysis as sentiment_repo
 from app.services.sentiment_analysis import (
     Opinion,
     analyze_sentiment,
+    calculate_statistical_measures,
     opinions_csv_to_list,
 )
 
@@ -150,4 +151,45 @@ async def get_sentiment_analysis_results(
                 created_at=sentiment_analysis_result.created_at,
             )
         )
+    return response
+
+
+class SentimentAnalysisStatisticalMeasuresResponse(BaseModel):
+    project_id: int
+    user_id: int
+    min: float
+    max: float
+    mean: float
+    median: float
+    std: float
+
+
+@router.get("/sentiment-analysis_statistical_measures/{project_id}")
+async def get_sentiment_analysis_statistical_measures(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDomain = Depends(get_current_user),
+) -> SentimentAnalysisStatisticalMeasuresResponse:
+    project = project_repo.get_project(
+        db, project_id=project_id, user_id=current_user.id
+    )
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    statistical_measures = calculate_statistical_measures(
+        db=db,
+        project_id=project_id,
+        user_id=current_user.id,
+    )
+
+    response = SentimentAnalysisStatisticalMeasuresResponse(
+        project_id=project_id,
+        user_id=current_user.id,
+        min=statistical_measures.min,
+        max=statistical_measures.max,
+        mean=statistical_measures.mean,
+        median=statistical_measures.median,
+        std=statistical_measures.std,
+    )
+
     return response

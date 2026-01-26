@@ -12,7 +12,10 @@ from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile
 
 from app.api.core.config import settings
-from app.repository.sentiment_analysis import create_sentiment_analysis_result
+from app.repository.sentiment_analysis import (
+    create_sentiment_analysis_result,
+    get_sentiment_analysis_results,
+)
 from app.utils.prompts import PromptTypeE, get_prompt
 
 
@@ -31,15 +34,6 @@ class OpinionsSentiment:
 @dataclass
 class OpinionsSentimentAverage:
     value: float
-
-
-@dataclass
-class OpinionsSentimentStatisticalMeasures:
-    min: float
-    max: float
-    mean: float
-    median: float
-    std: float
 
 
 def get_sentiment_values(
@@ -99,12 +93,31 @@ async def opinions_csv_to_list(file: UploadFile) -> list[Opinion]:
     return opinions_list
 
 
-def calculate_statistical_measures(
-    opinions_sentiment: list[OpinionsSentiment],
-) -> OpinionsSentimentStatisticalMeasures:
-    values = [opinion.sentiment for opinion in opinions_sentiment]
+@dataclass
+class SentimentAnalysisStatisticalMeasures:
+    min: float
+    max: float
+    mean: float
+    median: float
+    std: float
 
-    return OpinionsSentimentStatisticalMeasures(
+
+def calculate_statistical_measures(
+    db: Session,
+    project_id: int,
+    user_id: int,
+) -> SentimentAnalysisStatisticalMeasures:
+    sentiment_analysis_results = get_sentiment_analysis_results(
+        db=db,
+        project_id=project_id,
+        user_id=user_id,
+    )
+    values = [
+        float(sentiment_analysis_result.avg_sentiment)
+        for sentiment_analysis_result in sentiment_analysis_results
+    ]
+
+    return SentimentAnalysisStatisticalMeasures(
         min=min(values),
         max=max(values),
         mean=round(mean(values), 2),
