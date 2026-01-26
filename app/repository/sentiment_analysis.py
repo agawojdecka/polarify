@@ -1,5 +1,6 @@
 from datetime import date
 
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
 
 from app.models.sentiment_analysis import SentimentAnalysisResult
@@ -39,18 +40,17 @@ def get_sentiment_analysis_results(
     db: Session,
     project_id: int,
     user_id: int,
-    date_from: date | None = None,
-    date_to: date | None = None,
+    year: int | None = None,
 ) -> list[SentimentAnalysisResult]:
     query = db.query(SentimentAnalysisResult).filter(
         SentimentAnalysisResult.project_id == project_id,
         SentimentAnalysisResult.user_id == user_id,
     )
 
-    if date_from is not None:
-        query = query.filter(SentimentAnalysisResult.date_from >= date_from)
-
-    if date_to is not None:
-        query = query.filter(SentimentAnalysisResult.date_to <= date_to)
+    if year:
+        query = query.filter(
+            (extract("year", SentimentAnalysisResult.date_from) == year)
+            | (extract("year", SentimentAnalysisResult.date_to) == year)
+        )
 
     return query.order_by(SentimentAnalysisResult.created_at.desc()).all()

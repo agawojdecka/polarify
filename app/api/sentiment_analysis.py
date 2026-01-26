@@ -124,6 +124,7 @@ async def get_sentiment_analysis_results(
     project_id: int,
     db: Session = Depends(get_db),
     current_user: UserDomain = Depends(get_current_user),
+    year: int | None = None,
 ) -> list[SentimentAnalysisResponse]:
     project = project_repo.get_project(
         db, project_id=project_id, user_id=current_user.id
@@ -132,7 +133,10 @@ async def get_sentiment_analysis_results(
         raise HTTPException(status_code=404, detail="Project not found")
 
     sentiment_analysis_results = sentiment_repo.get_sentiment_analysis_results(
-        db, project_id=project_id, user_id=current_user.id
+        db,
+        project_id=project_id,
+        user_id=current_user.id,
+        year=year,
     )
 
     response = []
