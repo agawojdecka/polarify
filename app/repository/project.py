@@ -44,7 +44,7 @@ def update_project(
         return None
 
     db_project.name = name
-    db_project.description = description  # type: ignore
+    db_project.description = description if description else None  # type: ignore
     db.commit()
     db.refresh(db_project)
 
