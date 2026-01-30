@@ -1,4 +1,21 @@
 services:
+  api:
+    build: .
+    container_name: polarify_api
+    ports:
+      - "54321:54321"
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    command: fastapi dev app/main.py --port 54321 --host 0.0.0.0
+    environment:
+      - DATABASE_URL=postgresql://postgres_user:1234@db:5432/postgres_polarify
+      - TEST_DATABASE_URL=postgresql://test_user:test@test_db:5432/test_postgres_polarify
+    depends_on:
+      - db
+      - test_db
+
   db:
     image: postgres:13
     container_name: polarify_db
@@ -10,6 +27,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+
   test_db:
     image: postgres:13
     container_name: polarify_test_db
