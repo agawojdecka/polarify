@@ -42,7 +42,7 @@ jobs:
       run: poetry run isort . --check-only
 
     - name: Run Flake8
-      run: poetry run flake8 . --count --max-line-length=127 --statistics
+      run: poetry run flake8 . --count --max-line-length=90 --statistics
 
     - name: Run Mypy
       run: poetry run mypy .
