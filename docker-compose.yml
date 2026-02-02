@@ -4,8 +4,6 @@ services:
     container_name: polarify_api
     ports:
       - "54321:54321"
-    env_file:
-      - .env
     volumes:
       - .:/code
     command: fastapi dev app/main.py --port 54321 --host 0.0.0.0

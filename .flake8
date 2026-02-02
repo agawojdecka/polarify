@@ -2,3 +2,11 @@
 max-line-length = 90
 per-file-ignores =
     alembic/env.py: E402, F401
+exclude =
+    .venv,
+    venv,
+    __pycache__,
+    .git,
+    build,
+    dist
+extend-ignore = E203, W503
